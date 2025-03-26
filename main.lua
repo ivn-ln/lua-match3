@@ -6,12 +6,12 @@ Directions = {
 }
 
 JewelTypes = {
-	empty = -1
+    empty = -1
 }
 
 -- Visuals for the base jewels, i.e. uncombined / not powered up
 JewelsVisuals = {
-	[-1] = { symbol = " ", color = "\27[37m" }, -- Empty
+    [-1] = { symbol = " ", color = "\27[37m" }, -- Empty
     [1] = { symbol = "A", color = "\27[31m" }, -- Red
     [2] = { symbol = "B", color = "\27[32m" }, -- Green
     [3] = { symbol = "C", color = "\27[33m" }, -- Yellow
@@ -35,10 +35,10 @@ function Jewel.new(type, x, y)
 end
 
 function Jewel:destroy()
-	if self.destroyEffect then
-		self.destroyEffect:trigger(self)
-	end
-	self.type = -1
+    if self.destroyEffect then
+        self.destroyEffect:trigger(self)
+    end
+    self.type = -1
 end
 
 -- Base destroy effect class
@@ -46,12 +46,12 @@ DestroyEffect = {}
 DestroyEffect.__index = DestroyEffect
 
 function DestroyEffect.new()
-	local self = setmetatable({}, DestroyEffect)
-	return self
+    local self = setmetatable({}, DestroyEffect)
+    return self
 end
 
 function DestroyEffect:trigger(jewel)
-	io.stderr:write("Attempted using base destroy effect class, use a subclass")
+    io.stderr:write("Attempted using base destroy effect class, use a subclass")
 end
 
 -- Base match class
@@ -152,7 +152,7 @@ function Board.new(rows, cols)
     self.grid = {}
 
     -- Initialize grid with empty jewels
-	math.randomseed(os.time())
+    math.randomseed(os.time())
     for i = 1, rows do
         self.grid[i] = {}
         for j = 1, cols do
@@ -164,30 +164,30 @@ function Board.new(rows, cols)
 end
 
 function Board:swap(row1, col1, row2, col2)
-	local jewel1 = self.grid[row1][col1]
+    local jewel1 = self.grid[row1][col1]
     local jewel2 = self.grid[row2][col2]
-	jewel1.x, jewel1.y, jewel2.x, jewel2.y = jewel2.x, jewel2.y, jewel1.x, jewel1.y
+    jewel1.x, jewel1.y, jewel2.x, jewel2.y = jewel2.x, jewel2.y, jewel1.x, jewel1.y
     self.grid[row1][col1], self.grid[row2][col2] = jewel2, jewel1
 end
 
 function Board:checkMatches()
-	local foundMatches = {}
+    local foundMatches = {}
     for _, match in ipairs(Matches) do
-		local matches = match.check(self.grid)
-		if #matches > 0 then
-			for _, jewel in ipairs(matches) do
-				if jewel.type == -1 then
-					-- Skip the loop if the jewel has already been destroyed
-					goto continue
-				end
-				table.insert(foundMatches, jewel)
-				::continue::
-			end
-		end
+        local matches = match.check(self.grid)
+        if #matches > 0 then
+            for _, jewel in ipairs(matches) do
+                if jewel.type == -1 then
+                    -- Skip the loop if the jewel has already been destroyed
+                    goto continue
+                end
+                table.insert(foundMatches, jewel)
+                ::continue::
+            end
+        end
     end
 
-	-- Return true if any matches were found
-	return foundMatches
+    -- Return true if any matches were found
+    return foundMatches
 end
 
 -- Updates the board after jewels were removed
@@ -215,8 +215,8 @@ function Board:gravity()
 end
 
 function Board:generate()
-	--Fill the grid with random jewels
-	math.randomseed(os.time())
+    --Fill the grid with random jewels
+    math.randomseed(os.time())
     for i = 1, self.rows do
         for j = 1, self.cols do
             self.grid[i][j] = Jewel.new(math.random(1, 6))
@@ -235,7 +235,7 @@ function Board:generate()
 end
 
 function Board:checkViableMoves()
-	local viableMoves = false
+    local viableMoves = false
     for i = 1, self.rows do
         for j = 1, self.cols do
             -- Check swap with the jewel to the right
@@ -247,7 +247,7 @@ function Board:checkViableMoves()
                     viableMoves = true
                     return viableMoves
                 else
-					-- Swap back
+                    -- Swap back
                     self:swap(i, j, i, j + 1)
                 end
             end
@@ -258,10 +258,10 @@ function Board:checkViableMoves()
 
                 if self:checkMatches() then
                     self:swap(i, j, i + 1, j)
-					viableMoves = true
+                    viableMoves = true
                     return viableMoves
                 else
-					-- Swap back
+                    -- Swap back
                     self:swap(i, j, i + 1, j)
                 end
             end
@@ -376,7 +376,7 @@ function Renderer.drawJewel(jewel)
     local baseJewel = JewelsVisuals[jewel.type]
     if baseJewel then
         io.write(baseJewel.color .. baseJewel.symbol .. "\27[0m ") -- Reset color
-	end
+    end
 end
 
 function Renderer.drawBoard(board)
@@ -430,22 +430,22 @@ function GameInterface.move(row1, col1, row2, col2)
     end
     local jewel1 = board.grid[row1][col1]
     local jewel2 = board.grid[row2][col2]
-	-- Check if any matches appeared
-	if jewel1.type == -1 or jewel2.type == -1 then
-		io.stderr:write("Cannot move empty jewel\n")
-		return success
-	end
+    -- Check if any matches appeared
+    if jewel1.type == -1 or jewel2.type == -1 then
+        io.stderr:write("Cannot move empty jewel\n")
+        return success
+    end
 
-	board:swap(row1, col1, row2, col2)
+    board:swap(row1, col1, row2, col2)
 
-	if #board:checkMatches() < 1 then
-		Renderer.dump(board)
-		io.stderr:write("No matches appeared\n")
-		-- Reverse the movement
-		board:swap(row1, col1, row2, col2)
-		Renderer.dump(board)
-		return success
-	end
+    if #board:checkMatches() < 1 then
+        Renderer.dump(board)
+        io.stderr:write("No matches appeared\n")
+        -- Reverse the movement
+        board:swap(row1, col1, row2, col2)
+        Renderer.dump(board)
+        return success
+    end
 
     success = true
     return success
@@ -454,68 +454,68 @@ end
 function GameInterface.tick()
     local board = GameInterface.currentBoard
 
-	-- Renderer the board
+    -- Renderer the board
     Renderer.dump(board)
 
-	-- Check for matches
-	local matches = board:checkMatches()
-	for _, jewel in pairs(matches) do
-		jewel:destroy()
-	end
+    -- Check for matches
+    local matches = board:checkMatches()
+    for _, jewel in pairs(matches) do
+        jewel:destroy()
+    end
 
-	-- Rererender the board with destoyed jewels
-	print("Destroying matched jewels...")
-	Renderer.dump(board)
+    -- Rererender the board with destoyed jewels
+    print("Destroying matched jewels...")
+    Renderer.dump(board)
 
-	print("Filling empty slots...")
-	board:gravity()
-	Renderer.dump(board)
-	while #board:checkMatches() > 0 do
-		print("Checking")
-		matches = board:checkMatches()
-		for _, jewel in pairs(matches) do
-			jewel:destroy()
-		end
-		print("Destroying matched jewels...")
-		Renderer.dump(board)
-		print("Filling empty slots...")
-		board:gravity()
-		Renderer.dump(board)
-	end
+    print("Filling empty slots...")
+    board:gravity()
+    Renderer.dump(board)
+    while #board:checkMatches() > 0 do
+        print("Checking")
+        matches = board:checkMatches()
+        for _, jewel in pairs(matches) do
+            jewel:destroy()
+        end
+        print("Destroying matched jewels...")
+        Renderer.dump(board)
+        print("Filling empty slots...")
+        board:gravity()
+        Renderer.dump(board)
+    end
 
 
-	-- Check for empty jewels
-	while not board:checkViableMoves() do
-		board:shuffle()
-	end
+    -- Check for empty jewels
+    while not board:checkViableMoves() do
+        board:shuffle()
+    end
 end
 
 function GameInterface.gameLoop()
-	-- Handle input until it succeeds
-	print("Make your move")
-	while not InputHandler.handleInput(io.read()) do
-		io.stderr:write("Error handling input. Try again")
-		print("Make your move")
-		InputHandler.handleInput(io.read())
-	end
+    -- Handle input until it succeeds
+    print("Make your move")
+    while not InputHandler.handleInput(io.read()) do
+        io.stderr:write("Error handling input. Try again")
+        print("Make your move")
+        InputHandler.handleInput(io.read())
+    end
 
-	GameInterface.tick()
+    GameInterface.tick()
 
-	GameInterface.gameLoop()
+    GameInterface.gameLoop()
 end
 
 function GameInterface.init()
-	-- Initialize the board
-	local rows, cols = 10, 10
-	local board = Board.new(rows, cols)
-	GameInterface.currentBoard = board
-	board:generate()
+    -- Initialize the board
+    local rows, cols = 10, 10
+    local board = Board.new(rows, cols)
+    GameInterface.currentBoard = board
+    board:generate()
 
-	-- Render the board
-	Renderer.dump(GameInterface.currentBoard)
+    -- Render the board
+    Renderer.dump(GameInterface.currentBoard)
 
-	-- Start the gameplay loop
-	GameInterface.gameLoop()
+    -- Start the gameplay loop
+    GameInterface.gameLoop()
 end
 
 GameInterface.init()
